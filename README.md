@@ -7,6 +7,8 @@ Angle values can be wrapped in `Deg<N>` or `Rad<N>` to make it
 explicit what a function expects.
 
 ```rust
+use angle::Deg;
+
 type Vector = [f64; 2];
 
 /// Rotate vector counterclockwise by the given angle
@@ -24,6 +26,8 @@ A function can take `Into<Deg<N>>` or `<Into<Rad<N>>>` to accept
 angles as either floats or wrapped values.
 
 ```rust
+use angle::{Deg, Rad};
+
 fn rotate<T>(a: Vector, angle: T) -> Vector
 where
     T: Into<Deg<f64>>,
