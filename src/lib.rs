@@ -65,10 +65,11 @@ where
     }
 }
 
-impl From<Deg<f32>> for f64 {
+/// Convert float to degrees.
+impl<N: Float> From<N> for Deg<N> {
     #[inline]
-    fn from(deg: Deg<f32>) -> f64 {
-        f64::from(deg.0)
+    fn from(value: N) -> Deg<N> {
+        Deg(value)
     }
 }
 
@@ -117,17 +118,11 @@ where
     }
 }
 
-impl Into<Rad<f32>> for f32 {
+/// Convert float to radians.
+impl<N: Float> From<N> for Rad<N> {
     #[inline]
-    fn into(self) -> Rad<f32> {
-        Rad(self)
-    }
-}
-
-impl From<Rad<f32>> for f64 {
-    #[inline]
-    fn from(rad: Rad<f32>) -> f64 {
-        f64::from(rad.0)
+    fn from(value: N) -> Rad<N> {
+        Rad(value)
     }
 }
 
@@ -168,5 +163,69 @@ mod test {
         let rad_45 = Rad(pi / 4.);
         assert!(inexact_eq!(deg_45, rad_45.to_degrees()));
         assert!(Deg(deg_45).approx_eq(rad_45));
+    }
+
+    /// Using a float directly as degrees or rads.
+    #[test]
+    fn test_info() {
+        fn sum_f32<T: Into<Deg<f32>>>(lhs: T, rhs: T) -> Deg<f32> {
+            Deg(lhs.into().value() + rhs.into().value())
+        }
+        assert_eq!(sum_f32(Deg(45.), Deg(75.)), Deg(120.));
+        assert_eq!(sum_f32(45., 75.), Deg(120.));
+    }
+
+    #[test]
+    fn test_non_generic() {
+        type Vector = [f64; 2];
+
+        /// Rotate vector counterclockwise by the given angle
+        fn rotate(a: Vector, angle: Deg<f64>) -> Vector {
+            let r = angle.to_radians();
+            let x = a[0] * f64::cos(r) - a[1] * f64::sin(r);
+            let y = a[0] * f64::sin(r) + a[1] * f64::cos(r);
+            [x, y]
+        }
+
+        let actual = rotate([1., 0.], Deg(90.));
+        let expected = [0., 1.];
+        assert!(inexact_eq!(actual[0], expected[0]));
+        assert!(inexact_eq!(actual[1], expected[1]));
+    }
+
+    #[test]
+    fn test_generic() {
+        type Vector = [f64; 2];
+
+        /// Rotate vector counterclockwise by the given angle
+        fn rotate<T>(a: Vector, angle: T) -> Vector
+        where
+            T: Into<Deg<f64>>,
+        {
+            let r = angle.into().to_radians();
+            let x = a[0] * f64::cos(r) - a[1] * f64::sin(r);
+            let y = a[0] * f64::sin(r) + a[1] * f64::cos(r);
+            [x, y]
+        }
+
+        let expected = [0., 1.];
+
+        {
+            let actual = rotate([1., 0.], 90.);
+            assert!(inexact_eq!(actual[0], expected[0]));
+            assert!(inexact_eq!(actual[1], expected[1]));
+        }
+
+        {
+            let actual = rotate([1., 0.], Deg(90.));
+            assert!(inexact_eq!(actual[0], expected[0]));
+            assert!(inexact_eq!(actual[1], expected[1]));
+        }
+
+        {
+            let actual = rotate([1., 0.], Rad(std::f64::consts::PI / 2.));
+            assert!(inexact_eq!(actual[0], expected[0]));
+            assert!(inexact_eq!(actual[1], expected[1]));
+        }
     }
 }
