@@ -22,7 +22,7 @@ fn rotate(a: Vector, angle: Deg<f64>) -> Vector {
 let rotated = rotate([1., 0.], Deg(90.));
 ```
 
-A function can take `Into<Deg<N>>` or `<Into<Rad<N>>>` to accept
+A function can take `Into<Deg<N>>` or `Into<Rad<N>>` to accept
 angles as either floats or wrapped values.
 
 ```rust
